@@ -260,6 +260,16 @@ def MontgomeryCurve(prime_name="p1024_CTIDH", SDAC=False, validation="original")
         output: the projective Montgomery x-coordinate point x([L[j]]P)
         ----------------------------------------------------------------------
         """
+        
+        P2 = xdbl(P, A24)
+        R = [P, P2, xadd(P2, P, P)]
+
+        for sdac in SDACS_REVERSED[j]:
+
+            R[:] = R[sdac ^ 1], R[2], xadd(R[sdac ^ 1],R[2], R[sdac])
+
+        return R[2]
+        
         raise NotImplementedError
 
 
@@ -275,6 +285,21 @@ def MontgomeryCurve(prime_name="p1024_CTIDH", SDAC=False, validation="original")
         ----------------------------------------------------------------------
         """
         # NOTE: Use batch_maxdaclen to achieve security.
+        
+        P2 = xdbl(P, A24)
+        R = [P, P2, xadd(P2, P, P)]
+        R2 = [P, P2, xadd(P2, P, P)]
+        daclen=0
+        for sdac in SDACS_REVERSED[j]:
+
+            R[:] = R[sdac ^ 1], R[2], xadd(R[sdac ^ 1],R[2], R[sdac])
+            daclen=daclen+1
+        while daclen <=batch_maxdaclen:
+            daclen+=1
+            fake_sdac=random(0,1)
+            R2[:] = R2[sdac ^ 1], R2[2], xadd(R2[sdac ^ 1],R2[2], R2[sdac])
+
+        return R[2]
         raise NotImplementedError
 
     xmul_public = xmul_SDAC if SDAC else xmul_Ladder
